@@ -1,3 +1,15 @@
+
+
+
+
+//var commentURL = 'https://www.googleapis.com/youtube/v3/commentThreads?key='+api_key+'&textFormat=plainText&part=snippet&videoId='+videoID+'&maxResults=100'
+
+
+// SEARCH
+
+function analyzeComments(searchTerm, res) {
+    
+    
 const api_key = require('./api_key.js')
 
 
@@ -9,15 +21,6 @@ var sw = require('stopword')
 
 
 var NGrams = natural.NGrams;
-
-
-
-//var commentURL = 'https://www.googleapis.com/youtube/v3/commentThreads?key='+api_key+'&textFormat=plainText&part=snippet&videoId='+videoID+'&maxResults=100'
-
-
-// SEARCH
-
-function analyzeComments(searchTerm) {
 
 var searchURL = 'https://www.googleapis.com/youtube/v3/search?key='+api_key+'&textFormat=plainText&part=snippet&q='+searchTerm+'&type=video&maxResults=50'
 
@@ -146,6 +149,10 @@ request(searchURL, function (error, response, body) {
                             
                         }
                         
+                        var returnObj = finalNGARMS
+                        
+                        res.render('results.ejs', { returnObj: returnObj });
+                        
                         //var sortable = sortedArray(counts)
                         
                        //keysSorted = Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]})
@@ -162,6 +169,7 @@ request(searchURL, function (error, response, body) {
 
 analyzeComments('spicer')
 
+module.exports = analyzeComments
 
 // COMMENT
 // request(commentURL, function (error, response, body) {
