@@ -16,6 +16,7 @@
     "natural": "^0.5.4",
     "nodemon": "^1.11.0",
     "request": "^2.81.0",
-    "serve-favicon": "~2.4.2"
+    "serve-favicon": "~2.4.2",
+    "stopword": "^0.1.6"
   }
 }
