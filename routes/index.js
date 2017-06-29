@@ -92,10 +92,8 @@ request(searchURL, function (error, response, body) {
                             })
                             return tokenizedComments
                         }
-                        
-                        var tokenizedComments = tokenizeArray(totalcomment)
-                        
                     
+                        
                         function NGRAMSanalysis(array){
                             
                             var NGRAMarray = []
@@ -109,15 +107,7 @@ request(searchURL, function (error, response, body) {
                             })
                             return NGRAMarray
                         }
-       
-                        var grams_var = NGRAMSanalysis(totalcomment)
                         
-                       // console.log(sortedArray(countTotals(grams_var)))
-                        
-                        var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)))
-                        
-                       console.log(finalNGARMS)
-       
                         function countTotals(array){
                             
                             var counts = {};
@@ -132,11 +122,7 @@ request(searchURL, function (error, response, body) {
                             
                         }
                         
-                        var counts = countTotals(tokenizedComments)
-                      
-
-
-                        
+                                                
                         function sortedArray(counts){
                             
                             var sortable = [];
@@ -156,6 +142,30 @@ request(searchURL, function (error, response, body) {
                             
                             
                         }
+                        
+                        function posSorter(array){
+                            array.forEach(function(element){
+                                
+                            })
+                        }
+                        
+                        
+                        var tokenizedComments = tokenizeArray(totalcomment)
+       
+                        var grams_var = NGRAMSanalysis(totalcomment)
+                        
+                       // console.log(sortedArray(countTotals(grams_var)))
+                        
+                        var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)))
+                        
+                       console.log(finalNGARMS)
+       
+                        
+                        var counts = countTotals(tokenizedComments)
+                      
+
+
+
                         
                         var returnObj = finalNGARMS
                         
