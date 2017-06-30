@@ -1,37 +1,67 @@
-//var commentURL = 'https://www.googleapis.com/youtube/v3/commentThreads?key='+api_key+'&textFormat=plainText&part=snippet&videoId='+videoID+'&maxResults=100'
+import React, {Component} from 'react'
+import ReactDOM from 'react-dom'
+import SearchBar from './components/search_bar';
+//import CommentSearch from './rough_search'
+import AnalysisDetail from './components/analysis_detail'
+var nlp = require('compromise')
 
 
-// SEARCH
+class App extends React.Component {
+  
+  constructor(props) {
+    super(props);
+    
+    this.state = { analyses: ['MEOW', 'DOG', 'CAT', "RAR"], selectedAnalysis: [{ text: 'Search!', value: 1000 }] };
+    
+   this.CommentSearch('meow')
+  }
+  
+  
+  
+  render() {
+    return (
+      <div>
+      <div><SearchBar onSearchSubmit={term => this.CommentSearch(term)}/></div>
 
-function analyzeComments(searchTerm) {
+      <div><li onClick={event => this.setState({ selectedAnalysis: this.state.analyses[0] })}>NGRAMS</li></div>
+      <div><li onClick={event => this.setState({ selectedAnalysis: this.state.analyses[1] })}>Nouns</li></div>
+      <div><li onClick={event => this.setState({ selectedAnalysis: this.state.analyses[2] })}>Adjectives</li></div>
+      <div><li onClick={event => this.setState({ selectedAnalysis: this.state.analyses[3] })}>Verbs</li></div>
+      
+      <div><AnalysisDetail analysis={this.state.selectedAnalysis}/></div>
+      
+      </div>
+      )
+  }
+  
+  
+  
+  
+  
+CommentSearch(searchTerm) {
+  
+    console.log(this.state.analyses)
+    var self = this;
 
     
     var path = require("path");
-    const api_key = require('./api_key.js')
+    const api_key = require('../api_key.js');
 
 
-    var request = require('request');
+    var request = require('es6-request');
     var async = require('async');
     var natural = require('natural');
     var tokenizer = new natural.WordTokenizer();
-    var sw = require('stopword')
-var path = require("path");
+    var sw = require('stopword');
 
-var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
-var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
-var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
-var defaultCategory = 'N';
- 
-var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
-var rules = new natural.RuleSet(rulesFilename);
-var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
 
     var NGrams = natural.NGrams;
 
     var searchURL = 'https://www.googleapis.com/youtube/v3/search?key=' + api_key + '&textFormat=plainText&part=snippet&q=' + searchTerm + '&type=video&maxResults=50'
 
-    request(searchURL, function(error, response, body) {
+    request.get(searchURL)
+        .then(([body, res]) => {
         var videoIDs = []
         var parsed = JSON.parse(body)
         parsed.items.forEach(function(element) {
@@ -44,9 +74,8 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
                 var videoID = videoIDs[key]
                 var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key=' + api_key + '&textFormat=plainText&part=snippet&videoId=' + videoID + '&maxResults=100'
 
-                request(url, function(error, response, body) {
-
-                    if (!error) {
+                request.get(url)
+                .then(([body, res]) => {
 
                         try {
 
@@ -66,10 +95,10 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
 
                         }
-                    }
+                    
                     callback();
 
-                });
+                })
 
             },
             function(err) {
@@ -80,28 +109,46 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
                     console.log(err);
                 }
 
-             
-
-                console.log("DONE!");
+          
+                var final = nlp("Books")
+                final = final.verbs().out('array')
+                console.log(final.length);
+                console.log(totalcomment.length)
+                
+                //console.log(totalcomment)
 
                 // NGRAMS ANALYSIS
 
                 var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)));
+                var finalNGRAMS = finalNGARMS.slice(0,50)
+                //console.log(finalNGARMS)
+              //  this.setState({ selectedAnalysis: this.state.analyses[3] })
 
                 //OTHER ANALYSIS
 
                 var tokenizedComments = tokenizeArray(totalcomment);
                 var counts = countTotals(tokenizedComments);
                 var sortable = sortedArray(counts);
-                var nouns, verbs, adjectives = [];
-                POSanalyzer(sortable);
+             //   console.log(counts)
+              //  console.log(sortable)
+                var nouns = [];
+                var verbs = [];
+                var adjectives = [];
+              POSanalyzer(sortable);
+              // console.log(nouns)
+              // console.log(adjectives)
+              // console.log(verbs)
                 
                 // RETURN
 
-                var returnObj = [finalNGARMS, nouns, adjectives, verbs];
+                var returnObj = [finalNGRAMS, nouns, adjectives, verbs];
                 
-               console.log(returnObj)
+             
                 
+     
+                
+               self.setState({ analyses: returnObj })
+                           console.log(self.state);
                 
                 function tokenizeArray(array) {
                     var tokenizedComments = []
@@ -117,11 +164,12 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
                 function NGRAMSanalysis(array) {
 
                     var NGRAMarray = []
-
+                    //console.log(array)
                     array.forEach(function(element) {
-                        combinedString = NGrams.ngrams(element, 3)
+                     // console.log(element)
+                        let combinedString = NGrams.ngrams(element, 3)
                         combinedString.forEach(function(element) {
-                            NGRAMarray.push(element.join())
+                            NGRAMarray.push(element.join(' '))
                         })
 
                     })
@@ -131,57 +179,63 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
                 function countTotals(array) {
 
                     var counts = {};
-
+          
                     for (var i = 0; i < array.length; i++) {
                         var num = array[i];
                         counts[num] = counts[num] ? counts[num] + 1 : 1;
+                        
                     }
-
+                    //console.log(counts)
                     return counts
 
 
                 }
-
-
+                
                 function sortedArray(counts) {
 
-                    var sortable = [];
+      
+                    var textdisplay = [];
                     for (var element in counts) {
-                        //console.log(element)
+ 
                         if (counts[element] > 5) {
-                            sortable.push([element, counts[element]]);
+                          
+                            textdisplay.push({
+                              text: element, value: counts[element]
+                            })
                         }
 
                     }
 
-                    sortable.sort(function(a, b) {
-                        return a[1] - b[1];
+                    textdisplay.sort(function(a, b) {
+                    return b['value'] - a['value']
                     });
-
-                    return sortable
+                   // console.log(textdisplay)
+                    return textdisplay
 
 
                 }
+                
+
                 
                 function POSanalyzer(array) {
 
 
                     array.forEach(function(element) {
                         
-                        var word = element[0]
-                       
+                        var word = element.text
+
                         
-                        if ((tagger.tag([word]))[0][1] == "VB") {
+                        if (nlp(word).verbs().out('array').length >0){
                            verbs.push(element)
                             
                         }
                         
-                        if ((tagger.tag([word]))[0][1] == "NN") {
-                           nouns.push(element) 
+                           if (nlp(word).nouns().out('array').length >0){
+                           nouns.push(element)
                             
                         }
                         
-                        if ((tagger.tag([word]))[0][1] == "JJ") {
+                        if (nlp(word).adjectives().out('array').length >0){
                            adjectives.push(element)
                             
                         }
@@ -189,6 +243,10 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
          
 
                     })
+                    
+                    nouns = nouns.slice(0, 50)
+                    verbs = verbs.slice(0, 50)
+                    adjectives = adjectives.slice(0,50)
                    
                 }
 
@@ -200,19 +258,27 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
     });
 
 }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+}
 
-analyzeComments('spicer')
 
-module.exports = analyzeComments
 
-// COMMENT
-// request(commentURL, function (error, response, body) {
-//       var totalcomment = []
-//       var parsed = JSON.parse(body)
-//       console.log(parsed.kind)
-//       parsed.items.forEach(function(element){
-//             totalcomment.push(element.snippet.topLevelComment.snippet.textOriginal);
-//       })
-//       console.log(totalcomment)
+ReactDOM.render(
+  <App />,
+  document.getElementById('main')
+)
 
-// });
+
