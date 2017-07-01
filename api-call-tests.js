@@ -3,7 +3,7 @@
 
 // SEARCH
 
-function analyzeComments(searchTerm) {
+function analyzeComments(searchTerm, callback) {
 
     
     var path = require("path");
@@ -22,9 +22,9 @@ var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
 var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
 var defaultCategory = 'N';
  
-var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
-var rules = new natural.RuleSet(rulesFilename);
-var tagger = new natural.BrillPOSTagger(lexicon, rules);
+// var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
+// var rules = new natural.RuleSet(rulesFilename);
+// var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
 
     var NGrams = natural.NGrams;
@@ -86,22 +86,24 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
                 // NGRAMS ANALYSIS
 
-                var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)));
+                // var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)));
 
-                //OTHER ANALYSIS
+                // //OTHER ANALYSIS
 
-                var tokenizedComments = tokenizeArray(totalcomment);
-                var counts = countTotals(tokenizedComments);
-                var sortable = sortedArray(counts);
-                var nouns, verbs, adjectives = [];
-                POSanalyzer(sortable);
+                // var tokenizedComments = tokenizeArray(totalcomment);
+                // var counts = countTotals(tokenizedComments);
+                // var sortable = sortedArray(counts);
+                // var nouns, verbs, adjectives = [];
+                // POSanalyzer(sortable);
                 
-                // RETURN
+                // // RETURN
 
-                var returnObj = [finalNGARMS, nouns, adjectives, verbs];
+                // var returnObj = [finalNGARMS, nouns, adjectives, verbs];
                 
-               console.log(returnObj)
+            //   console.log(returnObj)
+            
                 
+               callback()
                 
                 function tokenizeArray(array) {
                     var tokenizedComments = []
@@ -163,6 +165,8 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
                 }
                 
+
+                
                 function POSanalyzer(array) {
 
 
@@ -201,7 +205,11 @@ var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
 }
 
-analyzeComments('spicer')
+analyzeComments('spicer', Meowie )
+
+                function Meowie() {
+                    console.log("MEOWWWWWWWWWW")
+                }
 
 module.exports = analyzeComments
 

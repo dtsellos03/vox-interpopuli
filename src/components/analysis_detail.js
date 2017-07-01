@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from 'react-dom';
 import WordCloud from 'react-d3-cloud';
+import { TagCloud } from "react-tagcloud";
 
 const data = [
   { text: 'Hey', value: 1000 },
@@ -24,7 +25,7 @@ const AnalysisDetail = (analysis) => {
         return <div>Loading...</div>;
     }
     
-  return (
+  if(analysis) {return (
       <div>
 
          <WordCloud
@@ -32,8 +33,12 @@ const AnalysisDetail = (analysis) => {
     fontSizeMapper={fontSizeMapper}
     rotate={0}
   />
+  
+  
+  
     </div>
   )
+}
 }
 
 export default AnalysisDetail;
