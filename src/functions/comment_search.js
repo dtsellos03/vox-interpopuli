@@ -5,7 +5,8 @@ function CommentSearch(searchTerm, callback) {
     
     const loadingObj = [{ text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }]
   
-    console.log(this.state.analyses)
+    console.log(searchTerm)
+    console.log(this.state)
     
    /// this.setState({ selectedAnalysis: [{ text: 'Loading!', value: 1000 }] })
    
@@ -35,13 +36,17 @@ function CommentSearch(searchTerm, callback) {
         var videoIDs = []
         var parsed = JSON.parse(body)
         parsed.items.forEach(function(element) {
-            videoIDs.push(element.id.videoId);
+            videoIDs.push({url: element.id.videoId, title: element.snippet.title});
         })
 
-        var totalcomment = []
+        var totalcomment = [];
+        var mostReplied = [];
+        var mostLiked = [];
+        
         async.forEachOfLimit(videoIDs, 1000, function(value, key, callback) {
 
-                var videoID = videoIDs[key]
+                var videoID = videoIDs[key].url
+                var videoTitle = videoIDs[key].title
                 var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key=' + api_key + '&textFormat=plainText&part=snippet&videoId=' + videoID + '&maxResults=100'
 
                 request.get(url)
@@ -49,11 +54,35 @@ function CommentSearch(searchTerm, callback) {
 
                         try {
 
-
                             var parsed = JSON.parse(body)
                                 //console.log(parsed.kind)
                             parsed.items.forEach(function(element) {
                                     totalcomment.push(element.snippet.topLevelComment.snippet.textOriginal.toLowerCase());
+                                   // console.log(element.snippet.totalReplyCount)
+                                    if (element.snippet.totalReplyCount > 10) {
+                                   
+                                        mostReplied.push({
+                                            comment: element.snippet.topLevelComment.snippet.textOriginal,
+                                            videotitle: videoTitle,
+                                            videoID: videoID,
+                                            replyCount: element.snippet.totalReplyCount
+                                        });
+                                        
+                                    }
+                                    
+                                    if (element.snippet.topLevelComment.snippet.likeCount > 10) {
+                                   
+                                        mostLiked.push({
+                                            comment: element.snippet.topLevelComment.snippet.textOriginal,
+                                            videotitle: videoTitle,
+                                            videoID: videoID,
+                                            likeCount: element.snippet.topLevelComment.snippet.likeCount
+                                        });
+                                        
+                                    }
+                                    
+                                    
+                                    
                                 })
                                 //console.log(totalcomment)
 
@@ -79,7 +108,17 @@ function CommentSearch(searchTerm, callback) {
                     console.log(err);
                 }
 
-          
+                 mostReplied.sort(function(a, b) {
+                    return b['replyCount'] - a['replyCount']
+                    });
+                //console.log(mostReplied)
+                
+                mostLiked.sort(function(a, b) {
+                    return b['replyCount'] - a['replyCount']
+                    });
+                    
+               // console.log(mostLiked)
+                
                 var final = nlp("Books")
                 final = final.verbs().out('array')
                 console.log(final.length);
@@ -110,18 +149,20 @@ function CommentSearch(searchTerm, callback) {
                 // RETURN
 
                 var returnObj = [finalNGRAMS, nouns, adjectives, verbs];
-                
+                console.log(returnObj)
              
                      callback(returnObj);
      
-                console.log("DOG")
+         
                 
                 return null
-                
-            //   self.setState({ analyses: returnObj, selectedAnalysis: returnObj[0] })
-            //               console.log(self.state);
+
                 
            
+                function topComment(element) {
+                    
+                }
+                
                 
                 
                 function tokenizeArray(array) {
@@ -143,8 +184,8 @@ function CommentSearch(searchTerm, callback) {
                     array.forEach(function(element) {
                      // console.log(element)
                         element = element.split(" ")
-                        let combinedString = NGrams.ngrams(element, 5)
-                        console.log(combinedString)
+                        let combinedString = NGrams.ngrams(element, 3)
+                      //  console.log(combinedString)
                         combinedString.forEach(function(element) {
                             NGRAMarray.push(element.join(' '))
                         })
@@ -177,7 +218,7 @@ function CommentSearch(searchTerm, callback) {
                         if (counts[element] > 5) {
                           
                             textdisplay.push({
-                              text: element, value: counts[element]
+                              value: element, count: counts[element]
                             })
                         }
 
@@ -196,10 +237,10 @@ function CommentSearch(searchTerm, callback) {
                 
                 function POSanalyzer(array) {
 
-
+                    console.log(array)
                     array.forEach(function(element) {
                         
-                        var word = element.text
+                        var word = element.value
 
                         
                         if (nlp(word).verbs().out('array').length >0){
