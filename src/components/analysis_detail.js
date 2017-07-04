@@ -28,13 +28,12 @@ const AnalysisDetail = (analysis) => {
   if(analysis) {return (
       <div>
 
-         <WordCloud
-    data={analysis.analysis}
-    fontSizeMapper={fontSizeMapper}
-    rotate={0}
-  />
   
   
+   <TagCloud minSize={12}
+            maxSize={35}
+            tags={analysis.analysis}
+            onClick={tag => alert(`'${tag.value}' was selected!`)} />
   
     </div>
   )
