@@ -1,17 +1,17 @@
 
 module.exports = 
 
-function CommentSearch(searchTerm, callback) {
+function CommentSearch(searchTerm, callback, firstcallback) {
     
     const loadingObj = [{ text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }, { text: 'Loading!', value: 1000 }]
   
     console.log(searchTerm)
     console.log(this.state)
-    
+    this.setState({selectedAnalysis: {kind:"LOADING", data: [{ text: 'Search!', value: 1000 }]}});
    /// this.setState({ selectedAnalysis: [{ text: 'Loading!', value: 1000 }] })
    
    // FIRST CALLBACK HERE
-    
+   // firstcallback()
 
 
 
@@ -47,7 +47,7 @@ function CommentSearch(searchTerm, callback) {
 
                 var videoID = videoIDs[key].url
                 var videoTitle = videoIDs[key].title
-                var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key=' + api_key + '&textFormat=plainText&part=snippet&videoId=' + videoID + '&maxResults=100'
+                var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key=' + api_key + '&textFormat=plainText&part=snippet&videoId=' + videoID + '&maxResults=100&order=relevance'
 
                 request.get(url)
                 .then(([body, res]) => {
@@ -65,7 +65,10 @@ function CommentSearch(searchTerm, callback) {
                                             comment: element.snippet.topLevelComment.snippet.textOriginal,
                                             videotitle: videoTitle,
                                             videoID: videoID,
-                                            replyCount: element.snippet.totalReplyCount
+                                            replyCount: element.snippet.totalReplyCount,
+                                            author: element.snippet.topLevelComment.snippet.authorDisplayName,
+                                            authorImage: element.snippet.topLevelComment.snippet.authorProfileImageUrl
+                                            
                                         });
                                         
                                     }
@@ -76,7 +79,10 @@ function CommentSearch(searchTerm, callback) {
                                             comment: element.snippet.topLevelComment.snippet.textOriginal,
                                             videotitle: videoTitle,
                                             videoID: videoID,
-                                            likeCount: element.snippet.topLevelComment.snippet.likeCount
+                                            likeCount: element.snippet.topLevelComment.snippet.likeCount,
+                                            author: element.snippet.topLevelComment.snippet.authorDisplayName,
+                                            authorImage: element.snippet.topLevelComment.snippet.authorProfileImageUrl
+                                            
                                         });
                                         
                                     }
@@ -114,7 +120,7 @@ function CommentSearch(searchTerm, callback) {
                 //console.log(mostReplied)
                 
                 mostLiked.sort(function(a, b) {
-                    return b['replyCount'] - a['replyCount']
+                    return b['likeCount'] - a['likeCount']
                     });
                     
                // console.log(mostLiked)
@@ -130,6 +136,10 @@ function CommentSearch(searchTerm, callback) {
 
                 var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)));
                 var finalNGRAMS = finalNGARMS.slice(0,50)
+                var finalNGRAMS = {kind: 'cloud',
+                data: 
+                    finalNGARMS.slice(0,50)
+                }
                 //console.log(finalNGARMS)
               //  this.setState({ selectedAnalysis: this.state.analyses[3] })
 
@@ -143,12 +153,35 @@ function CommentSearch(searchTerm, callback) {
                 var nouns = [];
                 var verbs = [];
                 var adjectives = [];
+                
+                var nounsObj = {
+                    kind: 'cloud',
+                    data: nouns
+                }
+                
+                var adjectivesObj = {
+                    kind: 'cloud',
+                    data: adjectives
+                }
+                
+                var verbsObj = {
+                    kind: 'MEOW',
+                    data: verbs
+                }
+                
+                var mostLikedObj = {
+                    kind: 'COMMENT',
+                    data: mostLiked
+                }
+   
+                
               POSanalyzer(sortable);
+
 
                 
                 // RETURN
 
-                var returnObj = [finalNGRAMS, nouns, adjectives, verbs];
+                var returnObj = [finalNGRAMS, nounsObj, adjectivesObj, verbsObj, mostLikedObj, mostReplied];
                 console.log(returnObj)
              
                      callback(returnObj);

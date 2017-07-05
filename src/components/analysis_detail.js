@@ -2,42 +2,58 @@ import React from 'react';
 import { render } from 'react-dom';
 import WordCloud from 'react-d3-cloud';
 import { TagCloud } from "react-tagcloud";
+import  List  from './list'
 
-const data = [
-  { text: 'Hey', value: 1000 },
-  { text: 'lol', value: 200 },
-  { text: 'first impression', value: 800 },
-  { text: 'very cool', value: 1000000 },
-  { text: 'duck', value: 10 },
-];
+
 
 
  
 const fontSizeMapper = word => Math.log2(word.value) * 5;
 const rotate = word => word.value % 360;
+const Loading = require('react-loading-animation');
 
 
 
 const AnalysisDetail = (analysis) => {
-  console.log(analysis)
+  
+    console.log(analysis)
+  
+  var processedList = analysis.analysis.data;
+
+
    
     if (!analysis){
         return <div>Loading...</div>;
     }
     
-  if(analysis) {return (
+  if(analysis) { 
+    
+    
+    if(analysis.analysis.kind == "LOADING"){
+ 
+      return <div><Loading /></div>
+ 
+    }
+    
+    if(analysis.analysis.kind == "COMMENT"){
+ 
+      return List(analysis.analysis.data)
+    }
+    
+  
+    return (
       <div>
 
   
-  
    <TagCloud minSize={12}
             maxSize={35}
-            tags={analysis.analysis}
+            tags={processedList}
             onClick={tag => alert(`'${tag.value}' was selected!`)} />
   
     </div>
   )
 }
+
 }
 
 export default AnalysisDetail;

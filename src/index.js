@@ -5,11 +5,8 @@ import SearchBar from './components/search_bar';
 import AnalysisDetail from './components/analysis_detail'
 import CommentSearch from './functions/comment_search'
 
-const Loading = require('react-loading-animation');
 
-  function SideMenu(props) {
-      return <h1>Menu</h1>
-  }
+
   
 
 
@@ -20,7 +17,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.CommentSearch = CommentSearch.bind(this)
-    this.state = { analyses: ['MEOW', 'DOG', 'CAT', "RAR"], selectedAnalysis: [{ text: 'Search!', value: 1000 }] };
+    this.state = { analyses: ['MEOW', 'DOG', 'CAT', "RAR"], selectedAnalysis: {kind:"LOADING", data: [{ text: 'Search!', value: 1000 }]} };
     
    this.CommentSearch('meow', (returnObj) => {
 
@@ -37,9 +34,12 @@ class App extends React.Component {
     return (
 
 <div className="ui very padded container">
-<h1 className="ui header">Vox Populi</h1>
+<h1 className="ui header">Vox Interpopuli</h1>
+<h5 className="ui header">The voice of the Intertubes</h5>
 <div className="ui container">
-<div><SearchBar onSearchSubmit={term => this.CommentSearch(term, (returnObj) => {
+<div><SearchBar onSearchSubmit={term => 
+
+this.CommentSearch(term, (returnObj) => {
 
         this.setState({ analyses: returnObj, selectedAnalysis: returnObj[0] })
 
@@ -61,8 +61,11 @@ class App extends React.Component {
       <a className="item" onClick={event => this.setState({ selectedAnalysis: this.state.analyses[3] })}>
         Verbs
       </a>
+     <a className="item" onClick={event => this.setState({ selectedAnalysis: this.state.analyses[4] })}>
+        Most Liked
+      </a>
     </div>
-    <SideMenu/>
+
   </div>
   <div className="thirteen wide column">
     <div className="ui segment">
