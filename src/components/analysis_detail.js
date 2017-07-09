@@ -1,18 +1,16 @@
 import React from 'react';
 import { render } from 'react-dom';
-import WordCloud from 'react-d3-cloud';
+
 import { TagCloud } from "react-tagcloud";
 import  List  from './list'
+import InitialSearch from './initial_search';
 
-
-
-
- 
-const fontSizeMapper = word => Math.log2(word.value) * 5;
-const rotate = word => word.value % 360;
 const Loading = require('react-loading-animation');
 
-
+const options = {
+  luminosity: 'light',
+  hue: 'red'
+};
 
 const AnalysisDetail = (analysis) => {
   
@@ -20,13 +18,14 @@ const AnalysisDetail = (analysis) => {
   
   var processedList = analysis.analysis.data;
 
-
-   
-    if (!analysis){
-        return <div>Loading...</div>;
-    }
     
   if(analysis) { 
+    
+    if(analysis.analysis.kind == "INITIAL") {
+      
+      return <InitialSearch/>
+      
+    }
     
     
     if(analysis.analysis.kind == "LOADING"){
@@ -40,15 +39,29 @@ const AnalysisDetail = (analysis) => {
       return List(analysis.analysis.data)
     }
     
+    
+    const customRenderer = (tag, size, color) => (
+  <span key={tag.value}
+        style={{
+          fontSize: `${size}em`,
+          margin: '5px',
+          padding: '5px',
+          display: 'inline-block',
+          color: `${color}`,
+        }}>{tag.value}</span>
+);
+    
+    
+    
   
     return (
       <div>
 
   
-   <TagCloud minSize={12}
-            maxSize={35}
-            tags={processedList}
-            onClick={tag => alert(`'${tag.value}' was selected!`)} />
+  <TagCloud tags={processedList}
+            minSize={2.3}
+            maxSize={3}
+            renderer={customRenderer} />
   
     </div>
   )
