@@ -1,0 +1,21 @@
+body {
+    background-color: #42f48f;
+}
+
+.flex-container {
+    display: flex;
+}
+
+.stickymenu {
+    position: sticky; 
+    top: 20px;
+}
+
+.flex-column {
+    flex: 1; min-width: 0px; padding-left: 10px;
+
+}
+
+.vertical.menu {
+    width: 150px !important;
+  }
