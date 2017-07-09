@@ -1,18 +1,61 @@
 <!DOCTYPE html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Vox Interpopuli</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css"></link>
-    </head>
-    <body>
-    
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Vox Interpopuli</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css"></link>
+
+    <style>
+        body {
+            background: #40ce76;
+            /* Old browsers */
+            background: -moz-linear-gradient(top, #40ce76 28%, #2cafe3 100%);
+            /* FF3.6-15 */
+            background: -webkit-linear-gradient(top, #40ce76 28%, #2cafe3 100%);
+            /* Chrome10-25,Safari5.1-6 */
+            background: linear-gradient(to bottom, #40ce76 28%, #2cafe3 100%);
+            /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+            filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#40ce76', endColorstr='#2cafe3', GradientType=0);
+            /* IE6-9 */
+            background-attachment: fixed;
+        }
+        
+        .flex-container {
+            display: flex;
+        }
+        
+        .ui.header {
+            color: white !important;
+        }
+        
+        .stickymenu {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .flex-column {
+            flex: 1;
+            min-width: 0px;
+            padding-left: 10px;
+        }
+        
+        .vertical.menu {
+            width: 180px !important;
+        }
+    </style>
+
+</head>
+
+<body>
+
     <br><br>
     <div id="main"></div>
-</div>
+    </div>
     <script src="bundle.js"></script>
 
-    </body>
+</body>
+
 </html>
