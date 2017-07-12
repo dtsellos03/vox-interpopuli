@@ -14,7 +14,6 @@ function CommentSearch(searchTerm, callback, firstcallback) {
    // firstcallback()
 
 
-
     var path = require("path");
     const api_key = require('../../api_key.js');
 
@@ -26,6 +25,12 @@ function CommentSearch(searchTerm, callback, firstcallback) {
     var tokenizer = new natural.WordTokenizer();
     var sw = require('stopword');
     var nlp = require('compromise')
+    
+    
+    request.get("/test/dog")
+        .then(([bodytest, res]) => {
+            console.log(bodytest)
+        });
 
 
     var NGrams = natural.NGrams;
