@@ -3,15 +3,21 @@ var router = express.Router();
 
 
 /* GET home page. */
+
+router.get('/test', function(req, res, next) {
+   res.status(201).json({
+             message: 'Saved message',
+             obj: req.params.value
+         })
+
+});
+
+
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/:value', function(req, res, next) {
-  console.log(req.params)
-  analyzeComments(req.params.value, res)
 
-});
 
 module.exports = router;
 
