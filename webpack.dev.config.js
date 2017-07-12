@@ -27,6 +27,7 @@ module.exports = {
   devtool: 'source-map',
   devServer: {
     stats: { colors: true },
+    historyApiFallback: true,
     disableHostCheck: true,
     contentBase: './dist',
      headers: {
