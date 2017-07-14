@@ -31,7 +31,7 @@ class App extends React.Component {
     return (
 
 <div className="ui padded container">
-<h1 className="ui header">Vox Interpopuli</h1>
+<h1 className="ui header">Vox Interpopulgi</h1>
 <h5 className="ui header">The voice of the Intertubes</h5>
 <div className="ui container">
 <span>
