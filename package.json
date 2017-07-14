@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "dev": "NODE_ENV=development webpack-dev-server --host $IP --port $PORT --config webpack.dev.config.js --progress --hot",
+    "devserver": "NODE_ENV=development webpack-dev-server --host $IP --port $PORT --config webpack.devserver.config.js --progress --hot",
+    "dev": "NODE_ENV=development webpack --config webpack.dev.config.js --progress --profile --colors --watch",
+    "prod": "webpack -p --config ./webpack.prod.js --progress --profile --colors",
     "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
     "test:watch": "npm run test -- --watch"
   },
@@ -24,6 +26,7 @@
     "moment": "^2.18.1",
     "morgan": "~1.8.1",
     "natural": "^0.5.4",
+    "node-libs-browser": "^2.0.0",
     "nodemon": "^1.11.0",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
