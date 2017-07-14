@@ -6,16 +6,18 @@ var router = express.Router();
 
 router.get('/test/:id', function(req, res, next) {
     
-    setTimeout(
-        function() {
-        res.status(201).json({
-             message: 'Saved message',
-             obj: req.params.id
-         })
+        var searchTerm = req.params.id;
+        console.log("LOOKED UP VIEW!");
         
-        }
-        , 17000);
-    
+        CommentSearch(searchTerm, function(returnObj){
+            res.status(201).json({
+             obj: returnObj
+         });
+        });
+ 
+ 
+        
+        
    
 
 });
@@ -29,172 +31,447 @@ router.get('/', function(req, res, next) {
 
 module.exports = router;
 
-function analyzeComments(searchTerm, res) {
+function CommentSearch(searchTerm, callback, firstcallback) {
     
-    
-const api_key = require('../api_key.js')
-
-
-var request = require('request');
-var async = require('async');
-var natural = require('natural');
-var tokenizer = new natural.WordTokenizer();
-var sw = require('stopword')
-
-
-var NGrams = natural.NGrams;
-
-var searchURL = 'https://www.googleapis.com/youtube/v3/search?key='+api_key+'&textFormat=plainText&part=snippet&q='+searchTerm+'&type=video&maxResults=50'
-
-request(searchURL, function (error, response, body) {
-      var videoIDs = []
-      var parsed = JSON.parse(body)
-      parsed.items.forEach(function(element){
-            videoIDs.push(element.id.videoId);
-      })
-
-      var totalcomment = []
-      async.forEachOfLimit(videoIDs, 1000, function(value, key, callback) {
-
-                        var videoID = videoIDs[key]
-                        var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key='+api_key+'&textFormat=plainText&part=snippet&videoId='+videoID+'&maxResults=100'
-
-                        request(url, function(error, response, body) {
-
-                            if (!error) {
-
-                                try {
-                                  
-                                    
-                                    var parsed = JSON.parse(body)
-                                    //console.log(parsed.kind)
-                                    parsed.items.forEach(function(element){
-                                          totalcomment.push(element.snippet.topLevelComment.snippet.textOriginal.toLowerCase());
-                                    })
-                                    //console.log(totalcomment)
-
-                                    //count++
-
-                                  
-                                }
-                                catch (err) {
-
-                               
-                                }
-                            }
-                            callback();
-
-                        });
-
-                    },
-                    function(err) {
-
-                        if (err) {
-                            console.log(err)
-                        }
-                        
-                    // TOKENIZE ARRAY 
-                    
-                        console.log("DONE!")
-                        
-                        function tokenizeArray(array){
-                            var tokenizedComments = []
-                            array.forEach(function(element){
-                                var tokenized = tokenizer.tokenize(element)
-                                tokenized = sw.removeStopwords(tokenized)
-                                tokenizedComments =  tokenizedComments.concat(tokenized)
-                            })
-                            return tokenizedComments
-                        }
-                    
-                        
-                        function NGRAMSanalysis(array){
-                            
-                            var NGRAMarray = []
-                            
-                            array.forEach(function(element){
-                                combinedString = NGrams.ngrams(element, 3)
-                                combinedString.forEach(function(element){
-                                    NGRAMarray.push(element.join())
-                                })
-                              
-                            })
-                            return NGRAMarray
-                        }
-                        
-                        function countTotals(array){
-                            
-                            var counts = {};
-                            
-                            for(var i = 0; i< array.length; i++) {
-                                var num = array[i];
-                                counts[num] = counts[num] ? counts[num]+1 : 1;
-                            }
-                            
-                            return counts
-                            
-                            
-                        }
-                        
-                                                
-                        function sortedArray(counts){
-                            
-                            var sortable = [];
-                            for (var element in counts) {
-                                //console.log(element)
-                                if(counts[element]>5){
-                                      sortable.push([element, counts[element]]);
-                                }
-                              
-                            }
-                            
-                            sortable.sort(function(a, b) {
-                                return a[1] - b[1];
-                            });
-                            
-                            return sortable
-                            
-                            
-                        }
-                        
-                        function posSorter(array){
-                            array.forEach(function(element){
-                                
-                            })
-                        }
-                        
-                        
-                        var tokenizedComments = tokenizeArray(totalcomment)
-       
-                        var grams_var = NGRAMSanalysis(totalcomment)
-                        
-                       // console.log(sortedArray(countTotals(grams_var)))
-                        
-                        var finalNGARMS = sortedArray(countTotals(NGRAMSanalysis(totalcomment)))
-                        
-                       console.log(finalNGARMS)
-       
-                        
-                        var counts = countTotals(tokenizedComments)
-                      
-
-
-
-                        
-                        var returnObj = finalNGARMS
-                        
-                        res.render('results.ejs', { returnObj: returnObj });
-                        
-                        //var sortable = sortedArray(counts)
-                        
-                       //keysSorted = Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]})
-
-
-                        //console.log(sortable)
+    console.log("REAHED FUNCTION");
+  
+    console.log(searchTerm);
+ //   console.log(this.state)
+  //  this.setState({selectedAnalysis: {kind:"LOADING", data: [{ text: 'Search!', value: 1000 }]}});
+   /// this.setState({ selectedAnalysis: [{ text: 'Loading!', value: 1000 }] })
    
-                    }
-                );
+   // FIRST CALLBACK HERE
+   // firstcallback()
 
-});
+
+    var path = require("path");
+    const api_key = require('../api_key.js');
+
+    console.time("Initial Requests");
+
+    var request = require('request');
+    var moment = require('moment');
+    var async = require('async');
+    var natural = require('natural');
+    var tokenizer = new natural.WordTokenizer();
+    var sw = require('stopword');
+    var nlp = require('compromise')
+
+
+    var NGrams = natural.NGrams;
+ console.log("Reached 1nd set of requests")
+    var searchURL = 'https://www.googleapis.com/youtube/v3/search?key=' + api_key + '&textFormat=plainText&part=snippet&q=' + searchTerm + '&type=video&maxResults=50'
+
+    request.get(searchURL, function (error, response, body){
+       
+         
+            
+        request.get(searchURL+'&pageToken='+JSON.parse(body).nextPageToken, function(error, response, bodytwo){
+
+        console.timeEnd("Initial Requests")
+        
+        console.time("Declaring variables")
+        
+        var videoIDs = []
+        var parsed = JSON.parse(body)
+        var secondparsed = JSON.parse(bodytwo)
+        
+        var topCommentNorm = {};
+        var mostRepliedNorm = {};
+        
+        console.timeEnd("Declaring variables")
+        
+        
+        
+        var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
+var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
+var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
+var defaultCategory = 'N';
+
+var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
+var rules = new natural.RuleSet(rulesFilename);
+var tagger = new natural.BrillPOSTagger(lexicon, rules);
+
+var sentence = ["I", "see", "the", "man", "with", "the", "telescope"];
+var sentence2 = "stuff"
+console.log(JSON.stringify(tagger.tag([sentence2])));
+        
+        
+        
+        
+        
+        
+        
+        console.time("Parse IDs")
+        
+        parsed.items.forEach(function(element) {
+            var vidID = element.id.videoId;
+            videoIDs.push({url: vidID, title: element.snippet.title});
+            topCommentNorm[vidID]= 0;
+            mostRepliedNorm[vidID] = 0;
+        })
+        
+        secondparsed.items.forEach(function(element) {
+            var vidID = element.id.videoId;
+            videoIDs.push({url: vidID, title: element.snippet.title});
+            topCommentNorm[vidID]= 0;
+            mostRepliedNorm[vidID] = 0;
+        })
+        
+        console.timeEnd("Parse IDs")
+
+
+        var totalcomment = [];
+        var mostReplied = [];
+        var mostLiked = [];
+        
+        console.time("Comment Requests")
+        
+        async.forEachOfLimit(videoIDs, 1000, function(value, key, callback) {
+
+                var videoID = videoIDs[key].url
+                var videoTitle = videoIDs[key].title
+                var url = 'https://www.googleapis.com/youtube/v3/commentThreads?key=' + api_key + '&textFormat=plainText&part=snippet&videoId=' + videoID + '&maxResults=100&order=relevance'
+
+                request.get(url, function(error, response, body) {
+           
+
+                        try {
+
+                            var parsed = JSON.parse(body)
+                                //console.log(parsed.kind)
+                            parsed.items.forEach(function(element) {
+                                    totalcomment.push(element.snippet.topLevelComment.snippet.textOriginal.toLowerCase());
+                                   // console.log(element.snippet.totalReplyCount)
+                                    if (element.snippet.totalReplyCount > 10 && mostRepliedNorm[videoID] < 3) {
+                                        
+                                        mostRepliedNorm[videoID] += 1;
+                                   
+                                        mostReplied.push({
+                                            comment: element.snippet.topLevelComment.snippet.textOriginal,
+                                            videotitle: videoTitle,
+                                            videoID: videoID,
+                                            replyCount: element.snippet.totalReplyCount,
+                                            author: element.snippet.topLevelComment.snippet.authorDisplayName,
+                                            authorImage: element.snippet.topLevelComment.snippet.authorProfileImageUrl,
+                                            date: moment.utc(element.snippet.topLevelComment.snippet.publishedAt).local().format('dddd, MMMM Do YYYY, h:mm a')                                            
+                                        });
+                                        
+                                    }
+                                    
+                                    if (element.snippet.topLevelComment.snippet.likeCount > 10 && topCommentNorm[videoID] < 3) {
+                                        
+                                        topCommentNorm[videoID] += 1;
+                                   
+                                        mostLiked.push({
+                                            comment: element.snippet.topLevelComment.snippet.textOriginal,
+                                            videotitle: videoTitle,
+                                            videoID: videoID,
+                                            likeCount: element.snippet.topLevelComment.snippet.likeCount,
+                                            author: element.snippet.topLevelComment.snippet.authorDisplayName,
+                                            authorImage: element.snippet.topLevelComment.snippet.authorProfileImageUrl,
+                                            date: moment.utc(element.snippet.topLevelComment.snippet.publishedAt).local().format('dddd, MMMM Do YYYY, h:mm a')
+                                            
+                                        });
+
+                                        
+                                    }
+                                    
+                                    
+                                    
+                                })
+                                //console.log(totalcomment)
+
+                            //count++
+
+
+                        }
+                        catch (err) {
+
+
+                        }
+                    
+                    callback();
+
+                })
+
+            },
+            function(err) {
+                
+                // AFTER ALL REQUESTS COMPLETE
+                
+                console.timeEnd("Comment Requests")
+                
+                console.time("Sort comment arrays")
+
+                if (err) {
+                    console.log(err);
+                }
+
+                 mostReplied.sort(function(a, b) {
+                    return b['replyCount'] - a['replyCount']
+                    });
+                    
+                mostReplied = mostReplied.slice(0,50)
+                //console.log(mostReplied)
+                
+                // console.log(mostRepliedNorm)
+                // console.log(topCommentNorm)
+                
+                mostLiked.sort(function(a, b) {
+                    return b['likeCount'] - a['likeCount']
+                    });
+                    
+               mostLiked = mostLiked.slice(0,50)
+                    
+            console.timeEnd("Sort comment arrays")
+            
+            
+                
+                //console.log(totalcomment)
+
+                // NGRAMS ANALYSIS
+                
+                console.time("NGRAMS")
+                
+                var NGRAMSarray = NGRAMSanalysis(totalcomment)
+
+                var finalTwoGrams = {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[0])).slice(0,50)}
+                var finalThreeGrams =  {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[1])).slice(0,50)}
+                var finalFourGrams =  {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[2])).slice(0,50)}
+               
+               console.timeEnd("NGRAMS")
+
+                //OTHER ANALYSIS
+                
+                console.time("Prenoun")
+
+                var tokenizedComments = tokenizeArray(totalcomment);
+                var counts = countTotals(tokenizedComments);
+                var sortable = sortedArray(counts);
+                
+                console.timeEnd("Prenoun")
+
+                var nouns = [];
+                var verbs = [];
+                var adjectives = [];
+                
+                console.time("POS Analyzer");
+                
+                NatPOSanalyzer(sortable);
+                 
+                console.timeEnd("POS Analyzer");
+                
+                
+                var nounsObj = {
+                    kind: 'cloud',
+                    data: nouns
+                }
+                
+                var adjectivesObj = {
+                    kind: 'cloud',
+                    data: adjectives
+                }
+                
+                var verbsObj = {
+                    kind: 'cloud',
+                    data: verbs
+                }
+                
+                var mostLikedObj = {
+                    kind: 'COMMENT',
+                    data: mostLiked
+                }
+                
+                var mostRepliedObj = {
+                    kind: 'COMMENT',
+                    data: mostReplied
+                }
+   
+                
+                // RETURN
+
+                // var returnObj = [finalNGRAMS, nounsObj, adjectivesObj, verbsObj, mostLikedObj, mostReplied];
+                
+                var returnObj = {
+                twoGrams: finalTwoGrams,
+                threeGrams: finalThreeGrams,
+                fourGrams: finalFourGrams,
+                nouns: nounsObj, 
+                adjectives: adjectivesObj, 
+                verbs: verbsObj, 
+                mostLiked: mostLikedObj, 
+                mostReplied: mostRepliedObj,
+                analysisInfo: {
+                    comments: totalcomment.length,
+                    videos: videoIDs.length
+                }
+                    
+                };
+
+             
+                callback(returnObj);
+     
+         
+                
+                
+
+                
+                
+                function tokenizeArray(array) {
+                    var tokenizedComments = []
+                    array.forEach(function(element) {
+                        var tokenized = element.split(" ");
+                        var stoptokenized = sw.removeStopwords(tokenized)
+                      //  console.log(tokenized + "---->" + stoptokenized)
+                        tokenizedComments = tokenizedComments.concat(stoptokenized)
+                    })
+                    return tokenizedComments
+                }
+
+
+                function NGRAMSanalysis(array) {
+
+                    var twoGRAMarray = [];
+                    var threeGRAMarray = [];
+                    var fourGRAMarray = [];
+                    //console.log(array)
+                    array.forEach(function(element) {
+                     // console.log(element)
+                        element = element.split(" ")
+                        var combinedStringTwo = NGrams.ngrams(element, 2)                      
+                        var combinedStringThree = NGrams.ngrams(element, 3)
+                        var combinedStringFour = NGrams.ngrams(element, 4)
+
+                        combinedStringTwo.forEach(function(element) {
+                            twoGRAMarray.push(element.join(' '))
+                        })
+                        
+                        combinedStringThree.forEach(function(element) {
+                            threeGRAMarray.push(element.join(' '))
+                        })
+                        
+                        combinedStringFour.forEach(function(element) {
+                            fourGRAMarray.push(element.join(' '))
+                        })
+
+                    })
+                    return [twoGRAMarray,threeGRAMarray,fourGRAMarray]
+                }
+
+                function countTotals(array) {
+
+                    var counts = {};
+          
+                    for (var i = 0; i < array.length; i++) {
+                        var num = array[i];
+                        counts[num] = counts[num] ? counts[num] + 1 : 1;
+                        
+                    }
+                    //console.log(counts)
+                    return counts
+
+
+                }
+                
+                function sortedArray(counts) {
+
+      
+                    var textdisplay = [];
+                    for (var element in counts) {
+ 
+                        if (counts[element] > 5) {
+                          
+                            textdisplay.push({
+                              value: element, count: counts[element]
+                            })
+                        }
+
+                    }
+
+                    textdisplay.sort(function(a, b) {
+                    return b['value'] - a['value']
+                    });
+                   // console.log(textdisplay)
+                    return textdisplay
+
+
+                }
+                
+
+                 function NatPOSanalyzer(array) {
+
+                   
+                    array.forEach(function(element) {
+                        
+                        var word = [element.value]
+
+                        
+                        switch(tagger.tag(word)[0][1]) {
+                        
+                            case "NN":
+                
+                                nouns.push(element)
+                                break;
+                            case "JJ":
+                                adjectives.push(element)
+                                break;
+                            case "VB":
+                                verbs.push(element)
+                                break;
+                            default:
+                                
+
+                        }
+
+                    })
+                    
+                    nouns = nouns.slice(0, 50)
+                    verbs = verbs.slice(0, 50)
+                    adjectives = adjectives.slice(0,50)
+                   
+                }
+
+                
+                function POSanalyzer(array) {
+
+                   
+                    array.forEach(function(element) {
+                        
+                        var word = element.value
+
+                        
+                        if (nlp(word).verbs().out('array').length >0){
+                           verbs.push(element)
+                            
+                        }
+                        
+                           if (nlp(word).nouns().out('array').length >0){
+                           nouns.push(element)
+                            
+                        }
+                        
+                        if (nlp(word).adjectives().out('array').length >0){
+                           adjectives.push(element)
+                            
+                        }
+
+         
+
+                    })
+                    
+                    nouns = nouns.slice(0, 50)
+                    verbs = verbs.slice(0, 50)
+                    adjectives = adjectives.slice(0,50)
+                   
+                }
+
+
+
+            }
+        );
+
+    });
+        })
 
 }
