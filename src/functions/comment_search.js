@@ -16,6 +16,7 @@ function CommentSearch(searchTerm, callback, firstcallback) {
 
     var path = require("path");
     const api_key = require('../../api_key.js');
+    var baseURL = "https://vox-interpopuli-dtsellos03.c9users.io"
 
 
     var request = require('es6-request');
@@ -26,10 +27,9 @@ function CommentSearch(searchTerm, callback, firstcallback) {
     var sw = require('stopword');
     var nlp = require('compromise')
     
-    
-    request.get("/test/dog")
+    request.get(baseURL+'/test/dog')
         .then(([bodytest, res]) => {
-            console.log(bodytest)
+            console.log(bodytest) 
         });
 
 
@@ -58,12 +58,12 @@ function CommentSearch(searchTerm, callback, firstcallback) {
             mostRepliedNorm[vidID] = 0;
         })
         
-        secondparsed.items.forEach(function(element) {
-            let vidID = element.id.videoId;
-            videoIDs.push({url: vidID, title: element.snippet.title});
-            topCommentNorm[vidID]= 0;
-            mostRepliedNorm[vidID] = 0;
-        })
+        // secondparsed.items.forEach(function(element) {
+        //     let vidID = element.id.videoId;
+        //     videoIDs.push({url: vidID, title: element.snippet.title});
+        //     topCommentNorm[vidID]= 0;
+        //     mostRepliedNorm[vidID] = 0;
+        // })
 
         var totalcomment = [];
         var mostReplied = [];
