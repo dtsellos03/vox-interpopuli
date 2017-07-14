@@ -4,11 +4,19 @@ var router = express.Router();
 
 /* GET home page. */
 
-router.get('/test', function(req, res, next) {
-   res.status(201).json({
+router.get('/test/:id', function(req, res, next) {
+    
+    setTimeout(
+        function() {
+        res.status(201).json({
              message: 'Saved message',
-             obj: req.params.value
+             obj: req.params.id
          })
+        
+        }
+        , 17000);
+    
+   
 
 });
 
