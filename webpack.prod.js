@@ -1,6 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
 
+
 console.log(path.join(__dirname, 'src/frontend' , 'index.html'));
 
 module.exports = {
@@ -14,9 +15,8 @@ module.exports = {
         publicPath: '/js/app/'
   },
   plugins: [ 
-  //   new webpack.optimize.CommonsChunkPlugin('common'),
-  // new webpack.optimize.DedupePlugin(),
-  // new webpack.optimize.UglifyJsPlugin(),
+    // new webpack.optimize.CommonsChunkPlugin('common'),
+  new webpack.optimize.UglifyJsPlugin({sourceMap: true}),
       new webpack.DefinePlugin({
       'process.env': {
         'NODE_ENV': JSON.stringify('production')
@@ -26,14 +26,14 @@ module.exports = {
   ],
 
   module: {
-       loaders: [
+       rules: [
       {
-    test: /\.jsx?$/,
-              loader: ['babel'],
-      query: {
-        presets: ['react', 'es2015']
-      }
-        
+        test: /\.jsx?$/,
+        use:[{
+              loader: 'babel-loader', options: {
+                    presets: ['react', 'es2015']
+                                         }
+            }]
       }
     ]
   }
