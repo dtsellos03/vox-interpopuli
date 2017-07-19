@@ -2,7 +2,8 @@ import React from 'react';
 import { render } from 'react-dom';
 
 import { TagCloud } from "react-tagcloud";
-import  List  from './list'
+import  List  from './list';
+import ParagraphText from './paragraph_text';
 import InitialSearch from './initial_search';
 
 const Loading = require('react-loading-animation');
@@ -19,7 +20,12 @@ const AnalysisDetail = (analysis) => {
   var processedList = analysis.analysis.data;
 
     
-  if(analysis) { 
+  if(analysis) {
+    
+    if(analysis.analysis.kind == "PARAGRAPH") {
+      return ParagraphText(analysis.analysis.data)
+      
+    }
     
     if(analysis.analysis.kind == "INITIAL") {
       
