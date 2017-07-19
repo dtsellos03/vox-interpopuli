@@ -2,9 +2,8 @@
 module.exports =
 
     function CommentSearch(searchTerm, callback, firstcallback) {
-        
     var request = require('es6-request');
-     var baseURL = "https://vox-interpopuli-dtsellos03.c9users.io";
+     var baseURL = window.location.href;
 
         const loadingObj = [{
             text: 'Loading!',
@@ -34,7 +33,7 @@ module.exports =
         /// this.setState({ selectedAnalysis: [{ text: 'Loading!', value: 1000 }] })
 
 
-        request.get(baseURL + '/test/'+encodeURI(searchTerm))
+        request.get(baseURL + 'test/'+encodeURI(searchTerm))
             .then(([bodytest, res]) => {
            
                 var returnObj = JSON.parse(bodytest).obj
