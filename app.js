@@ -19,11 +19,11 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/users', users);
+
 
 // catch 404 and forward to error handler /
 app.use(function(req, res, next) {
@@ -33,15 +33,16 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+// app.use(function(err, req, res, next) {
+//   // set locals, only providing error in development
+//   res.locals.message = err.message;
+//   res.locals.error = req.app.get('env') === 'development' ? err : {};
+//
+//   // render the error page
+//
+//   res.status(err.status || 500);
+//   res.render('error');
+// });
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -49,4 +50,29 @@ app.use(function(req, res, next) {
   next();
 });
 
-module.exports = app;
+var debug = require('debug')('workspace:server');
+var http = require('http');
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+var server = http.createServer(app);
+
+server.listen(port);
+
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
