@@ -31,7 +31,7 @@ class App extends React.Component {
     return (
 
 <div className="ui padded container">
-<h1 className="ui header">Vox Interpopulgi</h1>
+<h1 className="ui header">Why That Comment</h1>
 <h5 className="ui header">The voice of the Intertubes</h5>
 <div className="ui container">
 <span>
@@ -39,8 +39,7 @@ class App extends React.Component {
 
 this.CommentSearch(term, (returnObj) => {
 
-        this.setState({ analyses: returnObj, selectedAnalysis: returnObj.twoGrams })
-
+        this.setState({ analyses: returnObj, selectedAnalysis: returnObj.threeGrams })
 
    })}/>
    
@@ -83,9 +82,6 @@ this.CommentSearch(term, (returnObj) => {
   
   <div className="menu">
   
-      <a className="item"  onClick={event => this.setState({ selectedAnalysis: this.state.analyses.twoGrams })}>
-        Two words
-      </a>
       <a className="item" onClick={event => this.setState({ selectedAnalysis: this.state.analyses.threeGrams })}>
         Three words
       </a>
@@ -114,9 +110,21 @@ this.CommentSearch(term, (returnObj) => {
       </a>
       
         </div>
+        
+        
+        
       </div>
         
+         <div className="item">
+  
       
+<div className="header" onClick={event => this.setState({ selectedAnalysis: this.state.analyses.paragraph })}>Generated Text</div>
+        
+        
+        
+      </div>
+        
+       
 </div>
 
   </div>
