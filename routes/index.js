@@ -1,5 +1,25 @@
 var express = require('express');
 var router = express.Router();
+    var path = require("path");
+    const api_key = require('../api_key.js');
+
+   
+    
+    var generator = require('ngram-natural-language-generator');
+ 
+
+
+    var request = require('request');
+    var moment = require('moment');
+    var async = require('async');
+    var natural = require('natural');
+    var tokenizer = new natural.WordTokenizer();
+    var sw = require('stopword');
+    var nlp = require('compromise')
+
+    var fullCommentText = '';
+    
+    var NGrams = natural.NGrams;
 
 
 /* GET home page. */
@@ -33,48 +53,31 @@ module.exports = router;
 
 function CommentSearch(searchTerm, callback, firstcallback) {
     
-    console.log("REAHED FUNCTION");
+    console.time("Load functions")
   
     console.log(searchTerm);
- //   console.log(this.state)
-  //  this.setState({selectedAnalysis: {kind:"LOADING", data: [{ text: 'Search!', value: 1000 }]}});
-   /// this.setState({ selectedAnalysis: [{ text: 'Loading!', value: 1000 }] })
-   
-   // FIRST CALLBACK HERE
-   // firstcallback()
 
+        console.timeEnd("Load functions")
 
-    var path = require("path");
-    const api_key = require('../api_key.js');
-
-    console.time("Initial Requests");
-
-    var request = require('request');
-    var moment = require('moment');
-    var async = require('async');
-    var natural = require('natural');
-    var tokenizer = new natural.WordTokenizer();
-    var sw = require('stopword');
-    var nlp = require('compromise')
-
-
-    var NGrams = natural.NGrams;
- console.log("Reached 1nd set of requests")
     var searchURL = 'https://www.googleapis.com/youtube/v3/search?key=' + api_key + '&textFormat=plainText&part=snippet&q=' + searchTerm + '&type=video&maxResults=50'
+
+     console.time("Initial Requests");
+
 
     request.get(searchURL, function (error, response, body){
        
          
             
-        request.get(searchURL+'&pageToken='+JSON.parse(body).nextPageToken, function(error, response, bodytwo){
+        // request.get(searchURL+'&pageToken='+JSON.parse(body).nextPageToken, function(error, response, bodytwo){
 
         console.timeEnd("Initial Requests")
         
         console.time("Declaring variables")
         
         var videoIDs = []
+        var fullCommentText = '';
         var parsed = JSON.parse(body)
-        var secondparsed = JSON.parse(bodytwo)
+        // var secondparsed = JSON.parse(bodytwo)
         
         var topCommentNorm = {};
         var mostRepliedNorm = {};
@@ -84,42 +87,36 @@ function CommentSearch(searchTerm, callback, firstcallback) {
         
         
         var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
-var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
-var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
-var defaultCategory = 'N';
+        var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
+        var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
+        var defaultCategory = 'N';
+        
+        var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
+        var rules = new natural.RuleSet(rulesFilename);
+        var tagger = new natural.BrillPOSTagger(lexicon, rules);
 
-var lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
-var rules = new natural.RuleSet(rulesFilename);
-var tagger = new natural.BrillPOSTagger(lexicon, rules);
-
-var sentence = ["I", "see", "the", "man", "with", "the", "telescope"];
-var sentence2 = "stuff"
-console.log(JSON.stringify(tagger.tag([sentence2])));
-        
-        
-        
-        
-        
-        
         
         console.time("Parse IDs")
         
         parsed.items.forEach(function(element) {
             var vidID = element.id.videoId;
             videoIDs.push({url: vidID, title: element.snippet.title});
+          
             topCommentNorm[vidID]= 0;
             mostRepliedNorm[vidID] = 0;
         })
         
-        secondparsed.items.forEach(function(element) {
-            var vidID = element.id.videoId;
-            videoIDs.push({url: vidID, title: element.snippet.title});
-            topCommentNorm[vidID]= 0;
-            mostRepliedNorm[vidID] = 0;
-        })
+        // secondparsed.items.forEach(function(element) {
+        //     var vidID = element.id.videoId;
+        //     videoIDs.push({url: vidID, title: element.snippet.title});
+           
+        //     topCommentNorm[vidID]= 0;
+        //     mostRepliedNorm[vidID] = 0;
+        // })
         
         console.timeEnd("Parse IDs")
-
+        
+       
 
         var totalcomment = [];
         var mostReplied = [];
@@ -142,9 +139,10 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                                 //console.log(parsed.kind)
                             parsed.items.forEach(function(element) {
                                     totalcomment.push(element.snippet.topLevelComment.snippet.textOriginal.toLowerCase());
+                                      ;
                                    // console.log(element.snippet.totalReplyCount)
                                     if (element.snippet.totalReplyCount > 10 && mostRepliedNorm[videoID] < 3) {
-                                        
+                                        fullCommentText = fullCommentText.concat(element.snippet.topLevelComment.snippet.textOriginal)
                                         mostRepliedNorm[videoID] += 1;
                                    
                                         mostReplied.push({
@@ -160,7 +158,7 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                                     }
                                     
                                     if (element.snippet.topLevelComment.snippet.likeCount > 10 && topCommentNorm[videoID] < 3) {
-                                        
+                                        fullCommentText = fullCommentText.concat(element.snippet.topLevelComment.snippet.textOriginal)
                                         topCommentNorm[videoID] += 1;
                                    
                                         mostLiked.push({
@@ -180,10 +178,6 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                                     
                                     
                                 })
-                                //console.log(totalcomment)
-
-                            //count++
-
 
                         }
                         catch (err) {
@@ -201,7 +195,7 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                 // AFTER ALL REQUESTS COMPLETE
                 
                 console.timeEnd("Comment Requests")
-                
+
                 console.time("Sort comment arrays")
 
                 if (err) {
@@ -226,6 +220,18 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                     
             console.timeEnd("Sort comment arrays")
             
+                var GeneratedSentence = '';
+                
+                generator.generator({
+                    text: fullCommentText,
+                    model: {
+                        maxLength: 300,
+                        minLength: 50
+                    }
+                }, function(err, sentence) {
+                    GeneratedSentence = sentence;
+                    console.log(sentence);
+                });
             
                 
                 //console.log(totalcomment)
@@ -236,7 +242,7 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                 
                 var NGRAMSarray = NGRAMSanalysis(totalcomment)
 
-                var finalTwoGrams = {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[0])).slice(0,50)}
+                // var finalTwoGrams = {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[0])).slice(0,50)}
                 var finalThreeGrams =  {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[1])).slice(0,50)}
                 var finalFourGrams =  {kind: 'cloud', data: sortedArray(countTotals(NGRAMSarray[2])).slice(0,50)}
                
@@ -287,6 +293,11 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                     kind: 'COMMENT',
                     data: mostReplied
                 }
+                
+                var Paragraph = {
+                    kind: 'PARAGRAPH',
+                    data: GeneratedSentence
+                }
    
                 
                 // RETURN
@@ -294,7 +305,8 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                 // var returnObj = [finalNGRAMS, nounsObj, adjectivesObj, verbsObj, mostLikedObj, mostReplied];
                 
                 var returnObj = {
-                twoGrams: finalTwoGrams,
+                paragraph: Paragraph,
+                // twoGrams: finalTwoGrams,
                 threeGrams: finalThreeGrams,
                 fourGrams: finalFourGrams,
                 nouns: nounsObj, 
@@ -339,13 +351,14 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                     array.forEach(function(element) {
                      // console.log(element)
                         element = element.split(" ")
-                        var combinedStringTwo = NGrams.ngrams(element, 2)                      
+        
+                        // var combinedStringTwo = NGrams.ngrams(element, 2)                      
                         var combinedStringThree = NGrams.ngrams(element, 3)
                         var combinedStringFour = NGrams.ngrams(element, 4)
 
-                        combinedStringTwo.forEach(function(element) {
-                            twoGRAMarray.push(element.join(' '))
-                        })
+                        // combinedStringTwo.forEach(function(element) {
+                        //     twoGRAMarray.push(element.join(' '))
+                        // })
                         
                         combinedStringThree.forEach(function(element) {
                             threeGRAMarray.push(element.join(' '))
@@ -432,39 +445,6 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
                    
                 }
 
-                
-                function POSanalyzer(array) {
-
-                   
-                    array.forEach(function(element) {
-                        
-                        var word = element.value
-
-                        
-                        if (nlp(word).verbs().out('array').length >0){
-                           verbs.push(element)
-                            
-                        }
-                        
-                           if (nlp(word).nouns().out('array').length >0){
-                           nouns.push(element)
-                            
-                        }
-                        
-                        if (nlp(word).adjectives().out('array').length >0){
-                           adjectives.push(element)
-                            
-                        }
-
-         
-
-                    })
-                    
-                    nouns = nouns.slice(0, 50)
-                    verbs = verbs.slice(0, 50)
-                    adjectives = adjectives.slice(0,50)
-                   
-                }
 
 
 
@@ -472,6 +452,6 @@ console.log(JSON.stringify(tagger.tag([sentence2])));
         );
 
     });
-        })
+        // })
 
 }
