@@ -6,14 +6,9 @@ import CommentSearch from './functions/comment_search'
 import AnalysisMetrics from './components/analysismetrics'
 
 
-
-  
-
-
 class App extends React.Component {
     
 
-  
   constructor(props) {
     super(props);
     this.CommentSearch = CommentSearch.bind(this)
@@ -31,8 +26,7 @@ class App extends React.Component {
     return (
 
 <div className="ui padded container">
-<h1 className="ui header">Why That Comment</h1>
-<h5 className="ui header">The voice of the Intertubes</h5>
+<h1 className="ui header">Natural Comment Analyzer</h1>
 <div className="ui container">
 <span>
 <div><SearchBar onSearchSubmit={term => 
