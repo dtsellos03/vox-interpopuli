@@ -1,3 +1,5 @@
 api_key.js
 public/js/
 dist/
+package-lock.json
+.gitignore
