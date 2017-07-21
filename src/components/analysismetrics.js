@@ -22,7 +22,7 @@ const AnalysisMetrics = (obj) => {
     return (
    
 
-   <h5>Analyzed {obj.analysisInfo.videos} videos, {obj.analysisInfo.comments} comments</h5>
+   <h5 className="ui header">Analyzed {obj.analysisInfo.videos} videos, {obj.analysisInfo.comments.toLocaleString()} comments</h5>
    
 
 
